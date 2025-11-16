@@ -1,4 +1,4 @@
-name: Release vscode-lexical
+name: Release vscode-expert
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 jobs:
   publish-vscode:
     runs-on: ubuntu-latest
-    name: Build and publish vscode-lexical to official VSCode marketplace
+    name: Build and publish vscode-expert to official VSCode marketplace
     env:
       VSCE_PAT: ${{ secrets.VSCE_PAT }}
     steps:
@@ -29,7 +29,7 @@ jobs:
 
   publish-openvsx:
     runs-on: ubuntu-latest
-    name: Build and publish vscode-lexical to Open VSX marketplace
+    name: Build and publish vscode-expert to Open VSX marketplace
     env:
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
     steps:
@@ -66,18 +66,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Package vscode-lexical
-        run: npm run vsce:package -- --out vscode-lexical.vsix
+      - name: Package vscode-expert
+        run: npm run vsce:package -- --out vscode-expert.vsix
 
-      - run: cp vscode-lexical.vsix vscode-lexical-${{ github.ref_name }}.vsix
+      - run: cp vscode-expert.vsix vscode-expert-${{ github.ref_name }}.vsix
 
       - name: Create Github Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: vscode-lexical*.vsix
+          artifacts: vscode-expert*.vsix
           makeLatest: true
           allowUpdates: true
           body: >
             See the
-            [changelog](https://github.com/lexical-lsp/vscode-lexical/blob/main/CHANGELOG.md)
+            [changelog](https://github.com/expert-lsp/vscode-expert/blob/main/CHANGELOG.md)
             for the full release notes.

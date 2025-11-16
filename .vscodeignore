@@ -3,6 +3,5 @@
 !syntaxes/*
 !out/main.js
 !*-language-configuration.json
-!assets/*
 !LICENSE.txt
 !CHANGELOG.md

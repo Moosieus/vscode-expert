@@ -77,7 +77,7 @@ async function start(
 	startScriptOrReleaseFolderPath: string,
 	workspaceUri: URI,
 ): Promise<LanguageClient> {
-	Logger.info(`Starting Lexical in directory ${workspaceUri?.fsPath}`);
+	Logger.info(`Starting Expert in directory ${workspaceUri?.fsPath}`);
 
 	const startScriptPath = isExecutableFile(startScriptOrReleaseFolderPath)
 		? startScriptOrReleaseFolderPath
@@ -109,25 +109,25 @@ async function start(
 	};
 
 	const client = new LanguageClient(
-		"lexical",
-		"Lexical",
+		"expert",
+		"Expert",
 		serverOptions,
 		clientOptions,
 	);
 
 	Logger.info(
-		`Starting lexical release in "${startScriptOrReleaseFolderPath}"`,
+		`Starting Expert release in "${startScriptOrReleaseFolderPath}"`,
 	);
 
 	try {
 		await client.start();
 	} catch (reason) {
-		window.showWarningMessage(`Failed to start Lexical: ${reason}`);
+		window.showWarningMessage(`Failed to start Expert: ${reason}`);
 	}
 
 	return client;
 }
 
 function getConfig(section: string) {
-	return workspace.getConfiguration("lexical.server").get(section);
+	return workspace.getConfiguration("expert.server").get(section);
 }
