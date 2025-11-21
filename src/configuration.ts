@@ -1,46 +1,41 @@
 import path = require("path");
-import { ConfigurationTarget, workspace as vsWorkspace } from "vscode";
+import { ConfigurationTarget, WorkspaceConfiguration, workspace as vsWorkspace } from "vscode";
 import { URI } from "vscode-uri";
-import Logger from "./logger";
+import * as Logger from "./logger";
 
-namespace Configuration {
-	type GetConfig = (section: string) => unknown;
+// wrapped in functions b/c getConfiguration needs to be called late
+const getBaseConfig = () => vsWorkspace.getConfiguration("expert.server");
 
-	export function getReleasePathOverride(
-		getConfig: GetConfig,
-	): string | undefined {
-		return getConfig("releasePathOverride") as string | undefined;
-	}
+const getExpertConfig = () => getBaseConfig().getConfiguration("expert") as WorkspaceConfiguration;
 
-	export function getProjectDirUri(
-		getConfig: GetConfig,
-		workspace: typeof vsWorkspace,
-	): URI {
-		const projectDirConfig = getConfig("projectDir");
-
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const workspacePath = workspace.workspaceFolders![0].uri.path;
-
-		if (typeof projectDirConfig === "string") {
-			const fullDirectoryPath = path.join(workspacePath, projectDirConfig);
-			return URI.file(fullDirectoryPath);
-		} else {
-			return URI.file(workspacePath);
-		}
-	}
-
-	export function disableAutoInstallUpdateNotification(): void {
-		vsWorkspace
-			.getConfiguration("lexical")
-			.update("notifyOnServerAutoUpdate", false, ConfigurationTarget.Global)
-			.then(undefined, (e) => Logger.error(e.toString()));
-	}
-
-	export function getAutoInstallUpdateNotification(): boolean {
-		return vsWorkspace
-			.getConfiguration("lexical")
-			.get("notifyOnServerAutoUpdate", true);
-	}
+export function getServerEnabled() {
+	return getBaseConfig().get<boolean>("enabled", true);
 }
 
-export default Configuration;
+export function getReleasePathOverride() {
+	return getBaseConfig().get<string>("releasePathOverride");
+}
+
+export function getProjectDirUri(workspace: typeof vsWorkspace): URI {
+	const projectDirConfig = getBaseConfig().get<string>("projectDir");
+
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	const workspacePath = workspace.workspaceFolders![0].uri.path;
+
+	if (typeof projectDirConfig === "string") {
+		const fullDirectoryPath = path.join(workspacePath, projectDirConfig);
+		return URI.file(fullDirectoryPath);
+	}
+
+	return URI.file(workspacePath);
+}
+
+export function disableAutoInstallUpdateNotification(): void {
+	getExpertConfig()
+		.update("notifyOnServerAutoUpdate", false, ConfigurationTarget.Global)
+		.then(undefined, (e) => Logger.error(e.toString()));
+}
+
+export function getAutoInstallUpdateNotification() {
+	return getExpertConfig().get<boolean>("notifyOnServerAutoUpdate", true);
+}

@@ -12,36 +12,27 @@ type KeyOfType<T, V> = keyof {
 	[P in keyof T as T[P] extends V ? P : never]: unknown;
 };
 
-type AwaitedReturnOfFunctionOfType<
-	T,
-	F extends keyof T,
-> = T[F] extends AsyncFunction ? Awaited<ReturnType<T[F]>> : never;
-type ReturnOfFunctionOfType<T, F extends keyof T> = T[F] extends Fun
-	? ReturnType<T[F]>
+type AwaitedReturnOfFunctionOfType<T, F extends keyof T> = T[F] extends AsyncFunction
+	? Awaited<ReturnType<T[F]>>
 	: never;
+type ReturnOfFunctionOfType<T, F extends keyof T> = T[F] extends Fun ? ReturnType<T[F]> : never;
 
 /*
   We wrap the value param type in a 1-tuple to get control over when the param is required or not.
   In essence, we're looking for the same behavior as optional params (`param?: any`), but rather than being generally
   optional we want the parameter to be required or not based on the function's other parameters.
 */
-type AsyncReturnTypeTuple<
+type AsyncReturnTypeTuple<T, F extends KeyOfType<T, AsyncFunction>> = AwaitedReturnOfFunctionOfType<
 	T,
-	F extends KeyOfType<T, AsyncFunction>,
-> = AwaitedReturnOfFunctionOfType<T, F> extends void
+	F
+> extends void
 	? []
 	: [AwaitedReturnOfFunctionOfType<T, F>];
-type SyncReturnTypeTuple<
-	T,
-	F extends KeyOfType<T, Fun>,
-> = ReturnOfFunctionOfType<T, F> extends void
+type SyncReturnTypeTuple<T, F extends KeyOfType<T, Fun>> = ReturnOfFunctionOfType<T, F> extends void
 	? []
 	: [ReturnOfFunctionOfType<T, F>];
 
-function mockModuleFunction<M, F extends KeyOfType<M, Fun>>(
-	module: M,
-	fun: F,
-): jest.Mock<Fun> {
+function mockModuleFunction<M, F extends KeyOfType<M, Fun>>(module: M, fun: F): jest.Mock<Fun> {
 	if (!jest.isMockFunction(module[fun])) {
 		module[fun] = jest.fn() as M[F];
 	}
@@ -96,14 +87,12 @@ export function mockBlockedPromise<M, F extends KeyOfType<M, AsyncFunction>>(
 	mockedFunction.mockImplementation(() => new Promise(() => undefined)) as M[F];
 }
 
-export function mockBlockedPromiseOnce<
-	M,
-	F extends KeyOfType<M, AsyncFunction>,
->(module: M, fun: F): void {
+export function mockBlockedPromiseOnce<M, F extends KeyOfType<M, AsyncFunction>>(
+	module: M,
+	fun: F,
+): void {
 	const mockedFunction = mockAsyncModuleFunction(module, fun);
-	mockedFunction.mockImplementationOnce(
-		() => new Promise(() => undefined),
-	) as M[F];
+	mockedFunction.mockImplementationOnce(() => new Promise(() => undefined)) as M[F];
 }
 
 export function mockRejectedValue<M, F extends KeyOfType<M, AsyncFunction>>(
@@ -134,10 +123,7 @@ export function mockReturnValue<M, F extends KeyOfType<M, Fun>>(
 	mockedFunction.mockReturnValue(value) as M[F];
 }
 
-export function clearMock<M, F extends KeyOfType<M, Fun>>(
-	module: M,
-	fun: F,
-): void {
+export function clearMock<M, F extends KeyOfType<M, Fun>>(module: M, fun: F): void {
 	const mockedFunction = mockModuleFunction(module, fun);
 	mockedFunction.mockClear();
 }

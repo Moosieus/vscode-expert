@@ -2,8 +2,8 @@ import * as fs from "fs";
 import { describe, expect, jest, test } from "@jest/globals";
 import * as semver from "semver";
 import { Uri } from "vscode";
-import InstallationManifest from "../installation-manifest";
-import ReleaseVersion from "../release/version";
+import * as InstallationManifest from "../installation-manifest";
+import * as ReleaseVersion from "../version";
 import { mockReturnValue } from "./utils/strict-mocks";
 
 jest.mock("fs");
@@ -56,12 +56,7 @@ describe("isInstalledVersionGreaterThan", () => {
 			installedVersion: installedVersion,
 		};
 
-		expect(
-			InstallationManifest.isInstalledVersionGreaterThan(
-				manifest,
-				otherVersion,
-			),
-		).toBeTrue();
+		expect(InstallationManifest.isInstalledVersionGreaterThan(manifest, otherVersion)).toBeTrue();
 	});
 
 	test("returns false if installed version is not greater", () => {
@@ -71,12 +66,7 @@ describe("isInstalledVersionGreaterThan", () => {
 			installedVersion: installedVersion,
 		};
 
-		expect(
-			InstallationManifest.isInstalledVersionGreaterThan(
-				manifest,
-				otherVersion,
-			),
-		).toBeFalse();
+		expect(InstallationManifest.isInstalledVersionGreaterThan(manifest, otherVersion)).toBeFalse();
 	});
 });
 
@@ -86,9 +76,5 @@ function givenFileDoesNotExist() {
 
 function givenStoredManifest(manifest: Record<string, unknown>) {
 	mockReturnValue(fs, "existsSync", true);
-	mockReturnValue(
-		fs,
-		"readFileSync",
-		Buffer.from(JSON.stringify(manifest), "utf-8"),
-	);
+	mockReturnValue(fs, "readFileSync", Buffer.from(JSON.stringify(manifest), "utf-8"));
 }

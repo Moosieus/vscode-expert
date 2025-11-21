@@ -3,24 +3,27 @@ import { join } from "path";
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import { ExtensionContext, commands, window, workspace } from "vscode";
-import {
-	LanguageClient,
-	LanguageClientOptions,
-	ServerOptions,
-} from "vscode-languageclient/node";
+import { LanguageClient, LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
 import { URI } from "vscode-uri";
-import Commands from "./clientCommands";
-import reindexProject from "./clientCommands/reindex-project";
-import restartServer from "./clientCommands/restart-server";
-import Configuration from "./configuration";
-import LanguageServer from "./language-server";
-import Logger from "./logger";
+import * as Commands from "./client-commands";
+import * as Configuration from "./configuration";
+import * as LanguageServer from "./language-server";
+import * as Logger from "./logger";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export async function activate(context: ExtensionContext): Promise<void> {
+	const serverEnabled = Configuration.getServerEnabled();
+
+	if (serverEnabled === false) {
+		Logger.info(
+			"Expert language server is disabled via configuration. Only syntax highlighting will be active.",
+		);
+		return;
+	}
+
 	const startScriptOrReleaseFolderPath = await maybeAutoInstall(context);
-	const projectDir = Configuration.getProjectDirUri(getConfig, workspace);
+	const projectDir = Configuration.getProjectDirUri(workspace);
 
 	if (startScriptOrReleaseFolderPath !== undefined) {
 		const client = await start(startScriptOrReleaseFolderPath, projectDir);
@@ -29,36 +32,29 @@ export async function activate(context: ExtensionContext): Promise<void> {
 			context.subscriptions.push(commands.registerCommand(id, handler));
 		});
 
-		registerCommand(restartServer, { client });
-		registerCommand(reindexProject, { client });
+		registerCommand(Commands.restartServer, { client });
+		registerCommand(Commands.reindexProject, { client });
 	}
 }
 
 // This method is called when your extension is deactivated
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-export function deactivate(): void {
+export const deactivate = () => {
 	// noop
-}
+};
 
-async function maybeAutoInstall(
-	context: ExtensionContext,
-): Promise<string | undefined> {
-	const releasePathOverride = Configuration.getReleasePathOverride(getConfig);
+async function maybeAutoInstall(context: ExtensionContext): Promise<string | undefined> {
+	const releasePathOverride = Configuration.getReleasePathOverride();
 
 	if (releasePathOverride !== undefined && releasePathOverride !== "") {
-		Logger.info(
-			`Release override path set to "${releasePathOverride}". Skipping auto-install.`,
-		);
+		Logger.info(`Release override path set to "${releasePathOverride}". Skipping auto-install.`);
 
 		return releasePathOverride as string;
 	}
 
 	Logger.info("Release override path is undefined, starting auto-install.");
 
-	return await LanguageServer.install(
-		context.globalStorageUri,
-		window.showErrorMessage,
-	);
+	return await LanguageServer.install(context.globalStorageUri, window.showErrorMessage);
 }
 
 function isExecutableFile(path: fs.PathLike): boolean {
@@ -108,16 +104,9 @@ async function start(
 		},
 	};
 
-	const client = new LanguageClient(
-		"expert",
-		"Expert",
-		serverOptions,
-		clientOptions,
-	);
+	const client = new LanguageClient("expert", "Expert", serverOptions, clientOptions);
 
-	Logger.info(
-		`Starting Expert release in "${startScriptOrReleaseFolderPath}"`,
-	);
+	Logger.info(`Starting Expert release in "${startScriptOrReleaseFolderPath}"`);
 
 	try {
 		await client.start();
@@ -126,8 +115,4 @@ async function start(
 	}
 
 	return client;
-}
-
-function getConfig(section: string) {
-	return workspace.getConfiguration("expert.server").get(section);
 }

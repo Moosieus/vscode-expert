@@ -1,12 +1,8 @@
-import GithubRelease from "../../github/release";
+import { GithubRelease } from "../../github";
 
-namespace GithubReleaseFixture {
-	export function any(): GithubRelease.T {
-		return {
-			name: "0.0.1",
-			assets: [{ name: "lexical.zip", browser_download_url: "" }],
-		};
-	}
+export function any(): GithubRelease {
+	return {
+		name: "0.0.1",
+		assets: [{ name: "expert.zip", browser_download_url: "" }],
+	};
 }
-
-export default GithubReleaseFixture;

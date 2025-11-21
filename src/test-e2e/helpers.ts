@@ -15,14 +15,10 @@ export async function activate(
 
 	// The extensionId is `publisher.name` from package.json
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-	const ext = vscode.extensions.getExtension("lexical-lsp.lexical")!;
+	const ext = vscode.extensions.getExtension("expert-lsp.expert")!;
 	await ext.activate();
 	try {
-		const fixtureFilePath = path.resolve(
-			fixturesProjectPath,
-			"./lib/",
-			`${fixture}.ex`,
-		);
+		const fixtureFilePath = path.resolve(fixturesProjectPath, "./lib/", `${fixture}.ex`);
 
 		const doc = await vscode.workspace.openTextDocument(fixtureFilePath);
 		const editor = await vscode.window.showTextDocument(doc);

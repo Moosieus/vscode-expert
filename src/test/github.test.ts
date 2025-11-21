@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, jest, test } from "@jest/globals";
 import axios from "axios";
 import { URI } from "vscode-uri";
-import Github from "../github";
-import ReleaseVersion from "../release/version";
-import GithubReleaseFixture from "./fixtures/github-release-fixture";
-import ReleaseFixture from "./fixtures/release-fixture";
+import * as Github from "../github";
+import * as ReleaseVersion from "../version";
+import * as GithubReleaseFixture from "./fixtures/github-release-fixture";
+import * as ReleaseFixture from "./fixtures/release-fixture";
 import { mockResolvedValue } from "./utils/strict-mocks";
 
 jest.mock("axios");
@@ -18,18 +18,16 @@ describe("fetchLatestRelease", () => {
 		await Github.fetchLatestRelease();
 
 		expect(axios.get).toHaveBeenCalledWith(
-			"https://api.github.com/repos/lexical-lsp/lexical/releases/latest",
+			"https://api.github.com/repos/elixir-lang/expert/releases/latest",
 			{ headers: { accept: "application/vnd.github+json" } },
 		);
 	});
 
-	test("returns a lexical release", async () => {
+	test("returns an expert release", async () => {
 		mockResolvedValue(axios, "get", {
 			data: {
 				name: "0.0.1",
-				assets: [
-					{ name: "lexical.zip", browser_download_url: "https://example.com" },
-				],
+				assets: [{ name: "expert.zip", browser_download_url: "https://example.com" }],
 			},
 		});
 		const release = await Github.fetchLatestRelease();

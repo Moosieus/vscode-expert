@@ -1,6 +1,6 @@
 import { describe, expect, test } from "@jest/globals";
 import { SemVer } from "semver";
-import ReleaseVersion from "../../release/version";
+import * as ReleaseVersion from "../version";
 
 const validDate = "2023-05-27T15:48:20.000Z";
 const validSemanticVersion = "1.2.3";
@@ -13,9 +13,7 @@ describe("serialize", () => {
 	});
 
 	test("should serialize a semantic version", () => {
-		const serialized = ReleaseVersion.serialize(
-			new SemVer(validSemanticVersion),
-		);
+		const serialized = ReleaseVersion.serialize(new SemVer(validSemanticVersion));
 		expect(serialized).toEqual(validSemanticVersion);
 	});
 });
@@ -69,9 +67,7 @@ describe("gte", () => {
 		const lowerSemanticVersion = new SemVer("1.1.1");
 		const greaterSemanticVersion = new SemVer("2.2.2");
 
-		expect(
-			ReleaseVersion.gte(greaterSemanticVersion, lowerSemanticVersion),
-		).toBe(true);
+		expect(ReleaseVersion.gte(greaterSemanticVersion, lowerSemanticVersion)).toBe(true);
 	});
 
 	test("should compare two date versions", () => {

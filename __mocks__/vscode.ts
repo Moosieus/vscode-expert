@@ -30,8 +30,7 @@ const outputChannelStub = {
 
 export const window = {
 	withProgress: (_: unknown, fun: WithProgressFun) => fun(progressStub),
-	createOutputChannel: (_name: string, _options: { log: true }) =>
-		outputChannelStub,
+	createOutputChannel: (_name: string, _options: { log: true }) => outputChannelStub,
 };
 
 export enum ProgressLocation {

@@ -1,17 +1,13 @@
-import ReleaseVersion from "../../release/version";
+import * as ReleaseVersion from "../../version";
 
-namespace ReleaseVersionFixture {
-	export function any(): ReleaseVersion.T {
-		return ReleaseVersion.deserialize("0.3.0");
-	}
-
-	export function thatUsesNewPackaging(): ReleaseVersion.T {
-		return ReleaseVersion.deserialize("0.3.0");
-	}
-
-	export function thatDoesNotUseNewPackaging(): ReleaseVersion.T {
-		return ReleaseVersion.deserialize("0.2.0");
-	}
+export function any(): ReleaseVersion.Version {
+	return ReleaseVersion.deserialize("0.3.0");
 }
 
-export default ReleaseVersionFixture;
+export function thatUsesNewPackaging(): ReleaseVersion.Version {
+	return ReleaseVersion.deserialize("0.3.0");
+}
+
+export function thatDoesNotUseNewPackaging(): ReleaseVersion.Version {
+	return ReleaseVersion.deserialize("0.2.0");
+}

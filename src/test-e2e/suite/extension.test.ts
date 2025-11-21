@@ -19,10 +19,7 @@ function toRange(sLine: number, sChar: number, eLine: number, eChar: number) {
 	return new vscode.Range(start, end);
 }
 
-async function testDiagnostics(
-	fixture: Fixture,
-	expectedDiagnostics: vscode.Diagnostic[],
-) {
+async function testDiagnostics(fixture: Fixture, expectedDiagnostics: vscode.Diagnostic[]) {
 	const [doc] = await activate(fixture);
 
 	const actualDiagnostics = vscode.languages.getDiagnostics(doc.uri);

@@ -2,8 +2,8 @@ import * as fs from "fs";
 import * as os from "os";
 import { describe, expect, jest, test } from "@jest/globals";
 import { URI } from "vscode-uri";
-import Paths from "../paths";
-import ReleaseVersionFixture from "./fixtures/release-version-fixture";
+import * as Paths from "../paths";
+import * as ReleaseVersionFixture from "./fixtures/release-version-fixture";
 import { mockReturnValue } from "./utils/strict-mocks";
 
 jest.mock("fs");
@@ -12,13 +12,9 @@ jest.mock("os");
 describe("Paths", () => {
 	test("getInstallationDirectory returns the appropriate uri", () => {
 		const globalStorageUri = URI.parse("/vscode");
-		const installationDirectory =
-			Paths.getInstallationDirectoryUri(globalStorageUri);
+		const installationDirectory = Paths.getInstallationDirectoryUri(globalStorageUri);
 
-		expectUrisToBeEqual(
-			installationDirectory,
-			URI.parse("/vscode/lexical_install"),
-		);
+		expectUrisToBeEqual(installationDirectory, URI.parse("/vscode/expert_install"));
 	});
 
 	test("getZipUri returns the appropriate uri", () => {
@@ -26,10 +22,7 @@ describe("Paths", () => {
 
 		const zipUri = Paths.getZipUri();
 
-		expectUrisToBeEqual(
-			zipUri,
-			URI.parse("/real-tmp/vscode-lexical/lexical.zip"),
-		);
+		expectUrisToBeEqual(zipUri, URI.parse("/real-tmp/vscode-expert/expert.zip"));
 	});
 
 	test("getZipUri creates the temporary directory if it does not exist", () => {
@@ -38,7 +31,7 @@ describe("Paths", () => {
 
 		Paths.getZipUri();
 
-		expect(fs.mkdirSync).toHaveBeenCalledWith("/real-tmp/vscode-lexical", {
+		expect(fs.mkdirSync).toHaveBeenCalledWith("/real-tmp/vscode-expert", {
 			recursive: true,
 		});
 	});
@@ -47,22 +40,16 @@ describe("Paths", () => {
 		const globalStorageUri = URI.parse("/vscode");
 		const releaseUri = Paths.getReleaseUri(globalStorageUri);
 
-		expectUrisToBeEqual(
-			releaseUri,
-			URI.parse("/vscode/lexical_install/lexical"),
-		);
+		expectUrisToBeEqual(releaseUri, URI.parse("/vscode/expert_install/expert"));
 	});
 
 	describe("getStartScriptUri", () => {
 		test("returns script from bin when release uses new packaging", () => {
-			const releaseUri = URI.parse("/lexical");
+			const releaseUri = URI.parse("/expert");
 			const version = ReleaseVersionFixture.thatUsesNewPackaging();
 			const startScriptUri = Paths.getStartScriptUri(releaseUri, version);
 
-			expectUrisToBeEqual(
-				startScriptUri,
-				URI.parse("/lexical/bin/start_lexical.sh"),
-			);
+			expectUrisToBeEqual(startScriptUri, URI.parse("/lexical/bin/start_lexical.sh"));
 		});
 	});
 });

@@ -16,7 +16,7 @@
     "indentStyle": "tab",
     "indentWidth": 2,
     "lineEnding": "lf",
-    "lineWidth": 80,
+    "lineWidth": 100,
     "attributePosition": "auto",
     "bracketSpacing": true,
     "ignore": [
@@ -71,29 +71,9 @@
         "useYield": "error"
       },
       "style": {
-        "noNamespace": "off",
+        "noNamespace": "error",
         "useAsConstAssertion": "error",
         "useBlockStatements": "error",
-        "useNamingConvention": {
-          "level": "error",
-          "options": {
-            "strictCase": false,
-            "conventions": [
-              {
-                "selector": {
-                  "kind": "objectLiteralProperty"
-                },
-                "match": "(?:(?:[_$]?[a-z]+)(?:[A-Z]?[a-z]+)+|[_$]?(?:[A-Z][a-z0-9]+)+|browser_download_url)"
-              },
-              {
-                "selector": {
-                  "kind": "typeProperty"
-                },
-                "match": "(?:(?:[_$]?[a-z]+)(?:[A-Z]?[a-z]+)+|[_$]?(?:[A-Z][a-z0-9]+)+|browser_download_url)"
-              }
-            ]
-          }
-        },
         "useThrowOnlyError": "error"
       },
       "suspicious": {

@@ -105,6 +105,12 @@
           "default": "off",
           "description": "Traces the communication between VS Code and the language server."
         },
+        "expert.server.enabled": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable or disable the Expert language server. When disabled, only syntax highlighting will be active. Requires extension reload to take effect."
+        },
         "expert.server.releasePathOverride": {
           "scope": "window",
           "type": "string",

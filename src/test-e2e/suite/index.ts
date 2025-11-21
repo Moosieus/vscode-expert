@@ -8,10 +8,7 @@ interface ITestRunner {
 import path = require("path");
 
 const jestTestRunnerForVSCodeE2E: ITestRunner = {
-	run(
-		_testsRoot: string,
-		reportTestResults: (error?: Error, failures?: number) => void,
-	): void {
+	run(_testsRoot: string, reportTestResults: (error?: Error, failures?: number) => void): void {
 		const projectRootPath = process.cwd();
 		const config = path.join(projectRootPath, "jest.e2e.config.js");
 
