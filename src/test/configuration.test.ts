@@ -1,66 +1,104 @@
-import { describe, expect, jest, test } from "@jest/globals";
+import { describe, it, before, beforeEach } from "node:test";
+import assert from "node:assert";
 import { URI } from "vscode-uri";
-import * as Configuration from "../configuration";
+import { mockConfigValues, mockUpdateCalls } from "./vscode-mock.mjs";
 import * as WorkspaceFixture from "./fixtures/workspace-fixture";
 
-// Mock the vscode module
-jest.mock("vscode", () => ({
-	workspace: {
-		getConfiguration: jest.fn(),
-	},
-	window: {
-		createOutputChannel: jest.fn().mockReturnValue({
-			append: jest.fn(),
-			appendLine: jest.fn(),
-			clear: jest.fn(),
-			dispose: jest.fn(),
-			hide: jest.fn(),
-			show: jest.fn(),
-			trace: jest.fn(),
-			debug: jest.fn(),
-			info: jest.fn(),
-			warn: jest.fn(),
-			error: jest.fn(),
-		}),
-	},
-	l10n: {
-		t: jest.fn((message: string) => message),
-	},
-	ConfigurationTarget: {
-		Global: 1,
-	},
-}));
+type ConfigurationModule = typeof import("../configuration");
 
 describe("Configuration", () => {
-	test("getProjectDirUri returns the workspace URI when project dir is not configured", () => {
-		const workspace = WorkspaceFixture.withUri(URI.file("/stub"));
+	let Configuration: ConfigurationModule;
 
-		// Mock getConfiguration to return undefined for projectDir
-		const mockGet = jest.fn().mockReturnValue(undefined);
-		const vscode = require("vscode");
-		vscode.workspace.getConfiguration = jest.fn().mockReturnValue({
-			get: mockGet,
-		});
-
-		const projectDirUri = Configuration.getProjectDirUri(workspace);
-
-		expect(projectDirUri).toEqual(workspace.workspaceFolders![0].uri);
-		expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("expert.server");
+	before(async () => {
+		Configuration = await import("../configuration");
 	});
 
-	test("getProjectDirUri returns the full directory URI when project dir is configured", () => {
-		const workspace = WorkspaceFixture.withUri(URI.file("/stub"));
+	beforeEach(() => {
+		mockConfigValues.values = {};
+		mockUpdateCalls.calls = [];
+	});
 
-		// Mock getConfiguration to return "subdirectory" for projectDir
-		const mockGet = jest.fn().mockReturnValue("subdirectory");
-		const vscode = require("vscode");
-		vscode.workspace.getConfiguration = jest.fn().mockReturnValue({
-			get: mockGet,
+	describe("getServerEnabled", () => {
+		it("returns true by default when not configured", () => {
+			assert.strictEqual(Configuration.getServerEnabled(), true);
 		});
 
-		const projectDirUri = Configuration.getProjectDirUri(workspace);
+		it("returns true when explicitly enabled", () => {
+			mockConfigValues.values = { enabled: true };
+			assert.strictEqual(Configuration.getServerEnabled(), true);
+		});
 
-		expect(projectDirUri).toEqual(URI.file("/stub/subdirectory"));
-		expect(vscode.workspace.getConfiguration).toHaveBeenCalledWith("expert.server");
+		it("returns false when explicitly disabled", () => {
+			mockConfigValues.values = { enabled: false };
+			assert.strictEqual(Configuration.getServerEnabled(), false);
+		});
+	});
+
+	describe("getStartCommandOverride", () => {
+		it("returns undefined by default when not configured", () => {
+			assert.strictEqual(Configuration.getStartCommandOverride(), undefined);
+		});
+
+		it("returns the configured path", () => {
+			mockConfigValues.values = { startCommandOverride: "/path/to/custom/expert_distribution" };
+			assert.strictEqual(
+				Configuration.getStartCommandOverride(),
+				"/path/to/custom/expert_distribution",
+			);
+		});
+	});
+
+	describe("getStartupFlagsOverride", () => {
+		it("returns undefined by default when not configured", () => {
+			assert.strictEqual(Configuration.getStartupFlagsOverride(), undefined);
+		});
+
+		it("returns the configured flags", () => {
+			mockConfigValues.values = { startupFlagsOverride: "--debug --verbose" };
+			assert.strictEqual(Configuration.getStartupFlagsOverride(), "--debug --verbose");
+		});
+	});
+
+	describe("getAutoInstallUpdateNotification", () => {
+		it("returns true by default when not configured", () => {
+			assert.strictEqual(Configuration.getAutoInstallUpdateNotification(), true);
+		});
+
+		it("returns false when explicitly disabled", () => {
+			mockConfigValues.values = { notifyOnServerAutoUpdate: false };
+			assert.strictEqual(Configuration.getAutoInstallUpdateNotification(), false);
+		});
+	});
+
+	describe("disableAutoInstallUpdateNotification", () => {
+		it("calls update with correct parameters", () => {
+			Configuration.disableAutoInstallUpdateNotification();
+
+			assert.strictEqual(mockUpdateCalls.calls.length, 1);
+			assert.deepStrictEqual(mockUpdateCalls.calls[0], {
+				key: "notifyOnServerAutoUpdate",
+				value: false,
+				target: 1, // ConfigurationTarget.Global
+			});
+		});
+	});
+
+	describe("getProjectDirUri", () => {
+		it("returns the workspace URI when project dir is not configured", () => {
+			const workspace = WorkspaceFixture.withUri(URI.file("/stub"));
+
+			const projectDirUri = Configuration.getProjectDirUri(workspace);
+
+			assert.deepStrictEqual(projectDirUri, workspace.workspaceFolders![0].uri);
+		});
+
+		it("returns the full directory URI when project dir is configured", () => {
+			const workspace = WorkspaceFixture.withUri(URI.file("/stub"));
+			mockConfigValues.values = { projectDir: "subdirectory" };
+
+			const projectDirUri = Configuration.getProjectDirUri(workspace);
+
+			assert.deepStrictEqual(projectDirUri, URI.file("/stub/subdirectory"));
+		});
 	});
 });

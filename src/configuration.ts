@@ -12,8 +12,12 @@ export function getServerEnabled() {
 	return getBaseConfig().get<boolean>("enabled", true);
 }
 
-export function getReleasePathOverride() {
-	return getBaseConfig().get<string>("releasePathOverride");
+export function getStartCommandOverride() {
+	return getBaseConfig().get<string | undefined>("startCommandOverride", undefined);
+}
+
+export function getStartupFlagsOverride() {
+	return getBaseConfig().get<string | undefined>("startupFlagsOverride", undefined);
 }
 
 export function getProjectDirUri(workspace: typeof vsWorkspace): URI {

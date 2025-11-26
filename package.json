@@ -111,10 +111,15 @@
           "default": true,
           "markdownDescription": "Enable or disable the Expert language server. When disabled, only syntax highlighting will be active. Requires extension reload to take effect."
         },
-        "expert.server.releasePathOverride": {
+        "expert.server.startCommandOverride": {
           "scope": "window",
           "type": "string",
-          "markdownDescription": "Path to a local Expert executable, typically something like `/path/to/expert/apps/expert/burrito_out/expert_darwin_arm64`."
+          "markdownDescription": "Custom start command for the language server. Use absolute paths, employ at your discretion."
+        },
+        "expert.server.startupFlagsOverride": {
+          "scope": "window",
+          "type": "string",
+          "markdownDescription": "Overrides the flags used to start the language server."
         },
         "expert.server.projectDir": {
           "scope": "window",
@@ -159,6 +164,8 @@
     "format:check": "biome format",
     "test": "jest",
     "test:node": "node --import ./src/test/vscode-loader.mjs --import tsx --test src/test/installation.test.ts",
+    "test:node:configuration": "node --import ./src/test/vscode-loader.mjs --import tsx --test src/test/configuration.test.ts",
+    "test:node:extension": "node --experimental-test-module-mocks --import ./src/test/vscode-loader.mjs --import tsx --test src/test/extension.test.ts",
     "test:e2e": "npm run test-compile && node ./out/test-e2e/runTest.js",
     "vsce:package": "vsce package",
     "vsce:publish": "vsce publish",

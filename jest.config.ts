@@ -8,7 +8,12 @@ const config: Config = {
 	showSeed: true,
 	testMatch: ["<rootDir>/src/test/**/*.test.ts"],
 	// Exclude tests that use Node's test runner
-	testPathIgnorePatterns: ["/node_modules/", "installation\\.test\\.ts$"],
+	testPathIgnorePatterns: [
+		"/node_modules/",
+		"installation\\.test\\.ts$",
+		"extension\\.test\\.ts$",
+		"configuration\\.test\\.ts$",
+	],
 	setupFilesAfterEnv: ["./testSetup.ts"],
 };
 

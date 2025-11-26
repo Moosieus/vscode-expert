@@ -1,5 +1,4 @@
 import * as fs from "fs";
-import { join } from "path";
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import { ExtensionContext, Uri, commands, window, workspace } from "vscode";
@@ -24,22 +23,12 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
 	ensureDirectoryExists(context.globalStorageUri);
 
-	let LanguageServerPath: string | undefined;
-
-	const releasePathOverride = Configuration.getReleasePathOverride();
-
-	if (typeof releasePathOverride === "string" && releasePathOverride.length > 0) {
-		Logger.info(`starting language server from release override: "${releasePathOverride}".`);
-
-		LanguageServerPath = releasePathOverride;
-	} else {
-		LanguageServerPath = await checkAndInstall(context);
-	}
+	const serverOptions = await getServerStartupOptions(context);
 
 	const projectDir = Configuration.getProjectDirUri(workspace);
 
-	if (LanguageServerPath !== undefined) {
-		const client = await start(LanguageServerPath, projectDir);
+	if (serverOptions !== undefined) {
+		const client = await start(serverOptions, projectDir);
 
 		const registerCommand = Commands.getRegisterFunction((id, handler) => {
 			context.subscriptions.push(commands.registerCommand(id, handler));
@@ -56,31 +45,8 @@ export const deactivate = () => {
 	// noop
 };
 
-function isExecutableFile(path: fs.PathLike): boolean {
-	const stat = fs.lstatSync(path);
-	let hasExecuteAccess = false;
-	try {
-		fs.accessSync(path, fs.constants.X_OK);
-		hasExecuteAccess = true;
-	} catch (_e) {
-		hasExecuteAccess = false;
-	}
-	return stat.isFile() && hasExecuteAccess;
-}
-
-async function start(
-	startScriptOrReleaseFolderPath: string,
-	workspaceUri: URI,
-): Promise<LanguageClient> {
+async function start(serverOptions: ServerOptions, workspaceUri: URI): Promise<LanguageClient> {
 	Logger.info(`Starting Expert in directory ${workspaceUri?.fsPath}`);
-
-	const startScriptPath = isExecutableFile(startScriptOrReleaseFolderPath)
-		? startScriptOrReleaseFolderPath
-		: join(startScriptOrReleaseFolderPath, "start_lexical.sh");
-
-	const serverOptions: ServerOptions = {
-		command: startScriptPath,
-	};
 
 	const clientOptions: LanguageClientOptions = {
 		outputChannel: Logger.outputChannel(),
@@ -105,8 +71,6 @@ async function start(
 
 	const client = new LanguageClient("expert", "Expert", serverOptions, clientOptions);
 
-	Logger.info(`Starting Expert release in "${startScriptOrReleaseFolderPath}"`);
-
 	try {
 		await client.start();
 	} catch (reason) {
@@ -120,4 +84,37 @@ function ensureDirectoryExists(directory: Uri) {
 	if (!fs.existsSync(directory.fsPath)) {
 		fs.mkdirSync(directory.fsPath, { recursive: true });
 	}
+}
+
+async function getServerStartupOptions(
+	context: ExtensionContext,
+): Promise<ServerOptions | undefined> {
+	let serverOptions: ServerOptions | undefined;
+
+	const startCommandOverride = Configuration.getStartCommandOverride();
+
+	if (typeof startCommandOverride === "string" && startCommandOverride.length > 0) {
+		Logger.info(`starting language server from release override: "${startCommandOverride}".`);
+
+		serverOptions = { command: startCommandOverride };
+	} else {
+		const languageServerPath = await checkAndInstall(context);
+
+		if (typeof languageServerPath !== "undefined") {
+			let startupFlags;
+			const startupFlagsOverride = Configuration.getStartupFlagsOverride();
+			if (typeof startupFlagsOverride === "string" && startupFlagsOverride.length > 0) {
+				startupFlags = startupFlagsOverride;
+			} else {
+				startupFlags = "--stdio";
+			}
+
+			serverOptions = {
+				command: languageServerPath,
+				args: startupFlags.split(/\s+/).filter(Boolean),
+			};
+		}
+	}
+
+	return serverOptions;
 }
