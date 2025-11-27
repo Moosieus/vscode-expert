@@ -32,7 +32,20 @@ async function main() {
 		},
 	);
 
-	child.unref();
+	// Forward termination signals to child
+	const cleanup = () => child.kill()
+	
+	process.on("SIGINT", cleanup);
+	process.on("SIGTERM", cleanup);
+
+	// Wait for VSCode to close
+	await new Promise<void>((resolve) => {
+		child.on("close", () => resolve());
+		child.on("error", () => resolve());
+	});
+
+	process.off("SIGINT", cleanup);
+	process.off("SIGTERM", cleanup);
 }
 
 main().catch((err) => {

@@ -82,9 +82,12 @@ describe("checkAndInstall", () => {
 		assert.ok(result, "Should return an install path");
 		assert.match(result, /expert_darwin_arm64$/);
 
-		// distribution saved
+		// distribution saved and is executable
 		assert.ok(fs.existsSync(result), "Distribution should exist on disk");
 		assert.deepStrictEqual(fs.readFileSync(result), fakeAsset);
+		if (process.platform !== "win32") {
+			fs.accessSync(result, fs.constants.X_OK);
+		}
 
 		// manifest persisted
 		const manifest = ctx.globalStateStore.get("install_manifest") as Manifest;
@@ -119,9 +122,12 @@ describe("checkAndInstall", () => {
 
 		const result = await Installation.checkAndInstall(ctx.context as any);
 
-		// new binary was downloaded
+		// new binary was downloaded and is executable
 		assert.ok(result);
 		assert.deepStrictEqual(fs.readFileSync(result), newAsset);
+		if (process.platform !== "win32") {
+			fs.accessSync(result, fs.constants.X_OK);
+		}
 
 		// manifest updated with new timestamps
 		const manifest = ctx.globalStateStore.get("install_manifest") as Manifest;

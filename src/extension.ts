@@ -46,7 +46,7 @@ export function deactivate() {
 }
 
 async function start(serverOptions: ServerOptions, workspaceUri: Uri): Promise<LanguageClient> {
-	Logger.info(`Starting Expert in directory ${workspaceUri?.fsPath}`);
+	Logger.info(`Starting Expert in workspace ${workspaceUri?.fsPath}`)
 
 	const clientOptions: LanguageClientOptions = {
 		outputChannel: Logger.outputChannel(),
@@ -109,5 +109,9 @@ async function getServerStartupOptions(
 		return undefined;
 	}
 
-	return { command: languageServerPath, args: getStartupArgs() };
+	const args = getStartupArgs()
+
+	Logger.info(`Expert Language Server:\n${languageServerPath} ${args.join(" ")}`)
+
+	return { command: languageServerPath, args: args };
 }

@@ -143,12 +143,17 @@ function findDistribution(release: GitHubRelease) {
 }
 
 async function download(asset: Asset, context: ExtensionContext) {
-	const res = await fetch(asset.url, { headers: GITHUB_HEADERS });
+	const res = await fetch(asset.url, {
+		headers: {
+			...GITHUB_HEADERS,
+			Accept: "application/octet-stream",
+		},
+	});
 	const buf = Buffer.from(await res.arrayBuffer());
 
 	const installPath = Uri.joinPath(context.globalStorageUri, asset.name);
 
-	fs.writeFileSync(installPath.fsPath, buf, "binary");
+	fs.writeFileSync(installPath.fsPath, buf, { mode: 0o755 });
 
 	return installPath.fsPath;
 }

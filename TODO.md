@@ -22,6 +22,7 @@
 
 ### Syntax Highlighting Grammars:
 - Remove ad-hoc support for HEEx grammar here, only do Elixir and Embedded Elixir (eex).
+  - Maybe, maybe not? Not sure. Need to consider the gestalt of Phoenix Framework + Expert.
 - ~~Direct users to download the Phoenix Framework extension for HEEx syntax hightlighting.~~
 
 ### Testing:
@@ -29,7 +30,7 @@
   - Runs way faster and removes a ton of dev dependencies.
   - We really want this extension to be as light as possible.
 
-- Add a built-in "sandbox mode" to test the extension w/o installing it locally.
+- ~~Add a built-in "sandbox mode" to test the extension w/o installing it locally.~~
   - Need to make sure it boots without loading host machine extensions.
 
 ### DevOps:
