@@ -1,12 +1,25 @@
 # TODO
 
+## TODO Round #2
+
+- Figure out the best path forward with the various highlighting grammars and HEEx.
+- Report the first-time setup as a notification, or figure out why it's not doing so already.
+- Ensure the end-to-end tests are running as intended.
+- Add tests for:
+  - Syntax-only mode
+  - TCP mode
+- Add an `npm run check` precommit hook on staged files for those that want it (saves CI time).
+- CI/CD stuff
+
+## TODO Round #1
+
 ### General Stuff:
 - ~~Replace references to Lexical with Expert.~~
 - Update startup to match Expert's binary distribution and initialization (use the `--stdio` flag by default).
 - Start with downloading nightly builds of Expert and figure out semver later on (if that's even desirable).
 - ~~Ensure the language server is properly stopped when deactivating.~~
 - ~~(Maybe) add commands to expressly stop and start the language server.~~ (no need for now)
-- Add ability to connect via TCP in addition to stdio (see NextLS).
+- ~~Add ability to connect via TCP in addition to stdio (see NextLS).~~
 
 ### Configuration Options:
 - ~~Add an option for "syntax highlighting only" mode.~~
