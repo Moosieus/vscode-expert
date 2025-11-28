@@ -1,6 +1,11 @@
 import * as fs from "fs";
 import { commands, ExtensionContext, Uri, window, workspace } from "vscode";
-import { LanguageClient, LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
+import {
+	LanguageClient,
+	LanguageClientOptions,
+	ServerOptions,
+	StreamInfo,
+} from "vscode-languageclient/node";
 import * as Commands from "./commands";
 import * as Configuration from "./configuration";
 import { checkAndInstall } from "./installation";
@@ -100,15 +105,38 @@ function getStartupArgs(): string[] {
 	return flags.split(/\s+/).filter(Boolean);
 }
 
+function parsePortFromArgs(args: string[]): number | undefined {
+	const portIndex = args.indexOf("--port");
+	if (portIndex !== -1 && portIndex + 1 < args.length) {
+		const port = Number.parseInt(args[portIndex + 1], 10);
+		return Number.isNaN(port) ? undefined : port;
+	}
+	return undefined;
+}
+
 // should always log why we're returning undefined here.
 async function getServerStartupOptions(
 	context: ExtensionContext,
 ): Promise<ServerOptions | undefined> {
+	const args = getStartupArgs();
+	const port = parsePortFromArgs(args);
+
+	// TCP mode: skip auto-install, server runs externally
+	if (port !== undefined) {
+		Logger.info(`Expert Language Server (TCP): Connecting to 127.0.0.1:${port}`);
+		return () => {
+			const net = require("net");
+			const socket = net.connect({ host: "127.0.0.1", port });
+			const result: StreamInfo = { writer: socket, reader: socket };
+			return Promise.resolve(result);
+		};
+	}
+
 	const startCommandOverride = Configuration.getStartCommandOverride();
 
 	if (typeof startCommandOverride === "string" && startCommandOverride.length > 0) {
 		Logger.info(`starting language server from release override: "${startCommandOverride}".`);
-		return { command: startCommandOverride, args: getStartupArgs() };
+		return { command: startCommandOverride, args };
 	}
 
 	const languageServerPath = await checkAndInstall(context);
@@ -116,9 +144,7 @@ async function getServerStartupOptions(
 		return undefined;
 	}
 
-	const args = getStartupArgs();
-
 	Logger.info(`Expert Language Server:\n${languageServerPath} ${args.join(" ")}`);
 
-	return { command: languageServerPath, args: args };
+	return { command: languageServerPath, args };
 }

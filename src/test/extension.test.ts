@@ -8,6 +8,7 @@ import { before, beforeEach, describe, it, mock } from "node:test";
 let checkAndInstallCalled = false;
 let languageClientCreated = false;
 let languageClientArgs: { command?: string; args?: string[] } | undefined;
+let languageClientServerOptions: unknown;
 
 // Configuration values - set per test
 let configValues: Record<string, unknown> = {};
@@ -18,13 +19,12 @@ describe("Extension activation with configuration", () => {
 		mock.module("vscode-languageclient/node", {
 			namedExports: {
 				LanguageClient: class MockLanguageClient {
-					constructor(
-						_id: string,
-						_name: string,
-						serverOptions: { command: string; args?: string[] },
-					) {
+					constructor(_id: string, _name: string, serverOptions: unknown) {
 						languageClientCreated = true;
-						languageClientArgs = serverOptions;
+						languageClientServerOptions = serverOptions;
+						if (typeof serverOptions === "object" && serverOptions !== null) {
+							languageClientArgs = serverOptions as { command: string; args?: string[] };
+						}
 					}
 					start() {
 						return Promise.resolve();
@@ -72,6 +72,7 @@ describe("Extension activation with configuration", () => {
 		checkAndInstallCalled = false;
 		languageClientCreated = false;
 		languageClientArgs = undefined;
+		languageClientServerOptions = undefined;
 		configValues = {};
 	});
 
@@ -146,6 +147,29 @@ describe("Extension activation with configuration", () => {
 
 			assert.strictEqual(languageClientCreated, true, "LanguageClient should be created");
 			assert.deepStrictEqual(languageClientArgs?.args, ["--stdio"]);
+		});
+	});
+
+	describe("when startupFlagsOverride includes --port", () => {
+		it("uses TCP transport and skips auto-install", async () => {
+			configValues = {
+				enabled: true,
+				startupFlagsOverride: "--port 9000",
+			};
+
+			const { activate } = await import("../extension");
+			await activate({
+				globalStorageUri: { fsPath: "/test/storage" },
+				subscriptions: [],
+			} as any);
+
+			assert.strictEqual(checkAndInstallCalled, false, "Should skip auto-install for TCP");
+			assert.strictEqual(languageClientCreated, true, "LanguageClient should be created");
+			assert.strictEqual(
+				typeof languageClientServerOptions,
+				"function",
+				"ServerOptions should be a function for TCP",
+			);
 		});
 	});
 });
