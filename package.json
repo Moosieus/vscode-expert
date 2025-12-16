@@ -175,12 +175,22 @@
     },
     "commands": [
       {
-        "command": "expert.server.restart",
+        "command": "expert.server.start",
         "category": "Expert",
-        "title": "Restart Expert's language server"
+        "title": "Start language server"
       },
       {
-        "command": "expert.server.reindexProject",
+        "command": "expert.server.stop",
+        "category": "Expert",
+        "title": "Stop language server"
+      },
+      {
+        "command": "expert.server.restart",
+        "category": "Expert",
+        "title": "Restart language server"
+      },
+      {
+        "command": "expert.server.reindex",
         "category": "Expert",
         "title": "Rebuild code search index"
       }

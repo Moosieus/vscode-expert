@@ -30,17 +30,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
 	ensureDirectoryExists(context.globalStorageUri);
 
 	const serverOptions = await getServerStartupOptions(context);
-
 	const projectDir = Configuration.getProjectDirUri(workspace);
 
 	if (serverOptions !== undefined) {
 		client = await start(serverOptions, projectDir);
 
 		context.subscriptions.push(
-			commands.registerCommand("expert.server.restart", () => Commands.restartServer(client!)),
-			commands.registerCommand("expert.server.reindexProject", () =>
-				Commands.reindexProject(client!),
-			),
+			commands.registerCommand("expert.server.start", () => Commands.start(client!)),
+			commands.registerCommand("expert.server.stop", () => Commands.stop(client!)),
+			commands.registerCommand("expert.server.restart", () => Commands.restart(client!)),
+			commands.registerCommand("expert.server.reindex", () => Commands.reindex(client!)),
 		);
 	} else {
 		Logger.warn("language server startup options, will not start.");

@@ -1,9 +1,27 @@
 import { ExecuteCommandRequest, type LanguageClient } from "vscode-languageclient/node";
 import * as Logger from "./logger";
 
-export function restartServer(client: LanguageClient) {
+export function start(client: LanguageClient) {
 	if (client.isRunning()) {
-		Logger.info("Expert client is already running. Restarting.");
+		Logger.info("Expert language-client is already running.");
+	} else {
+		Logger.info("Starting Expert language-client...");
+		client.start();
+	}
+}
+
+export function stop(client: LanguageClient) {
+	if (client.isRunning()) {
+		Logger.info("Stopping Expert language-client...");
+		client.stop();
+	} else {
+		Logger.info("Expert language-client has already stopped.");
+	}
+}
+
+export function restart(client: LanguageClient) {
+	if (client.isRunning()) {
+		Logger.info("Expert language-client is already running. Restarting.");
 		client.restart();
 	} else {
 		Logger.info("Expert client is not running. Starting.");
@@ -11,7 +29,7 @@ export function restartServer(client: LanguageClient) {
 	}
 }
 
-export function reindexProject(client: LanguageClient) {
+export function reindex(client: LanguageClient) {
 	if (!client.isRunning()) {
 		Logger.error("Client is not running, cannot send command to server.");
 		return;
