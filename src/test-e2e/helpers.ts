@@ -1,8 +1,33 @@
 import * as path from "path";
 import * as vscode from "vscode";
+import { type LanguageClient, State } from "vscode-languageclient/node";
 
 export enum Fixture {
 	Diagnostics = "diagnostics",
+}
+
+/**
+ * Waits for the language client to reach the Running state.
+ */
+function waitForClientReady(client: LanguageClient, timeoutMs = 30000): Promise<void> {
+	if (client.state === State.Running) {
+		return Promise.resolve();
+	}
+
+	return new Promise((resolve, reject) => {
+		const timeout = setTimeout(() => {
+			disposable.dispose();
+			reject(new Error(`Server init timeout. State: ${State[client.state]}`));
+		}, timeoutMs);
+
+		const disposable = client.onDidChangeState((e) => {
+			if (e.newState === State.Running) {
+				clearTimeout(timeout);
+				disposable.dispose();
+				resolve();
+			}
+		});
+	});
 }
 
 /**
@@ -11,7 +36,7 @@ export enum Fixture {
  * @param timeoutMs Maximum time to wait (default 30 seconds)
  * @returns Promise that resolves when diagnostics are available
  */
-function waitForDiagnostics(uri: vscode.Uri, timeoutMs = 30000): Promise<vscode.Diagnostic[]> {
+function waitForDiagnostics(uri: vscode.Uri, timeoutMs = 15000): Promise<vscode.Diagnostic[]> {
 	return new Promise((resolve, reject) => {
 		const timeout = setTimeout(() => {
 			disposable.dispose();
@@ -42,7 +67,7 @@ function waitForDiagnostics(uri: vscode.Uri, timeoutMs = 30000): Promise<vscode.
 }
 
 /**
- * Activates the vscode.lsp-sample extension
+ * Activates the Expert extension and waits for the language server to initialize.
  */
 export async function activate(
 	fixture: Fixture,
@@ -50,9 +75,15 @@ export async function activate(
 	const fixturesProjectPath = path.resolve(__dirname, "./fixtures");
 
 	// The extensionId is `publisher.name` from package.json
-	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	const ext = vscode.extensions.getExtension("expert-lsp.expert")!;
-	await ext.activate();
+	const client = (await ext.activate()) as LanguageClient | undefined;
+
+	// Wait for server to initialize
+	if (client === undefined) {
+		throw new Error("Language client not available - server may have failed to start");
+	}
+	await waitForClientReady(client);
+
 	try {
 		const fixtureFilePath = path.resolve(fixturesProjectPath, "./lib/", `${fixture}.ex`);
 

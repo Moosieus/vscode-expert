@@ -17,14 +17,14 @@ let client: LanguageClient | undefined;
  * Called by VSCode when starting the extension.
  * @param context Extension Context provided by Visual Studio Code.
  */
-export async function activate(context: ExtensionContext): Promise<void> {
+export async function activate(context: ExtensionContext): Promise<LanguageClient | undefined> {
 	const serverEnabled = Configuration.getServerEnabled();
 
 	if (serverEnabled === false) {
 		Logger.info(
 			"Expert language server is disabled via configuration. Only syntax highlighting will be active.",
 		);
-		return;
+		return undefined;
 	}
 
 	ensureDirectoryExists(context.globalStorageUri);
@@ -41,8 +41,12 @@ export async function activate(context: ExtensionContext): Promise<void> {
 			commands.registerCommand("expert.server.restart", () => Commands.restart(client!)),
 			commands.registerCommand("expert.server.reindex", () => Commands.reindex(client!)),
 		);
+
+		return client;
 	} else {
 		Logger.warn("language server startup options, will not start.");
+
+		return undefined;
 	}
 }
 
